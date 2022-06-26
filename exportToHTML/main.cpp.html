@@ -1,0 +1,334 @@
+<html>
+<head>
+<title>main.cpp</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #bbb529;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #6a8759;}
+.s3 { color: #cc7832;}
+.s4 { color: #808080;}
+.s5 { color: #6897bb;}
+.s6 { color: #6a8759;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+main.cpp</font>
+</center></td></tr></table>
+<pre><span class="s0">#include </span><span class="s2">&lt;cstring&gt;</span>
+<span class="s0">#include </span><span class="s2">&lt;ctime&gt;</span>
+<span class="s0">#include </span><span class="s2">&lt;iostream&gt;</span>
+
+<span class="s3">using namespace </span><span class="s1">std</span><span class="s3">;</span>
+
+<span class="s4">// Значения клеток</span>
+<span class="s0">#define </span><span class="s1">EMPTY </span><span class="s2">'.'</span>
+<span class="s0">#define </span><span class="s1">CROSS </span><span class="s2">'X'</span>
+<span class="s0">#define </span><span class="s1">ZERO </span><span class="s2">'O'</span>
+
+<span class="s4">// Статус игры</span>
+<span class="s0">#define </span><span class="s1">IN_PROGRESS </span><span class="s5">0</span>
+<span class="s0">#define </span><span class="s1">FIRST_PLAYER_WON </span><span class="s5">1</span>
+<span class="s0">#define </span><span class="s1">SECOND_PLAYER_WON </span><span class="s5">2</span>
+<span class="s0">#define </span><span class="s1">DRAW </span><span class="s5">3</span>
+
+<span class="s4">// Максимальный размер поля</span>
+<span class="s3">const int </span><span class="s1">MAX_HEIGHT = </span><span class="s5">10</span><span class="s3">;</span>
+<span class="s3">const int </span><span class="s1">MAX_WIDTH = </span><span class="s5">10</span><span class="s3">;</span>
+<span class="s3">const int </span><span class="s1">MIN_WIDTH = </span><span class="s5">2</span><span class="s3">;</span>
+<span class="s3">const int </span><span class="s1">MIN_HEIGHT = </span><span class="s5">2</span><span class="s3">;</span>
+
+<span class="s3">char </span><span class="s1">field[MAX_HEIGHT][MAX_WIDTH]</span><span class="s3">;</span>
+
+<span class="s4">// Текущий статус игры</span>
+<span class="s3">int </span><span class="s1">game_status = IN_PROGRESS</span><span class="s3">;</span>
+
+<span class="s3">void </span><span class="s1">print_position(</span><span class="s3">int </span><span class="s1">n</span><span class="s3">, int </span><span class="s1">m)</span><span class="s3">;</span>
+<span class="s3">void </span><span class="s1">checkstatus(</span><span class="s3">int </span><span class="s1">n</span><span class="s3">, int </span><span class="s1">m</span><span class="s3">, int </span><span class="s1">k</span><span class="s3">, int </span><span class="s1">x</span><span class="s3">, int </span><span class="s1">y</span><span class="s3">, bool </span><span class="s1">turn</span><span class="s3">, int </span><span class="s1">count_moves)</span><span class="s3">;</span>
+<span class="s3">void </span><span class="s1">random_bot(</span><span class="s3">int </span><span class="s1">n</span><span class="s3">, int </span><span class="s1">m</span><span class="s3">, bool </span><span class="s1">turn</span><span class="s3">, int </span><span class="s1">*x</span><span class="s3">, int </span><span class="s1">*y)</span><span class="s3">;</span>
+
+<span class="s4">// Режим игры: Player versus Player</span>
+<span class="s1">string game_process_player_vs_player(</span><span class="s3">int </span><span class="s1">n</span><span class="s3">, int </span><span class="s1">m</span><span class="s3">, int </span><span class="s1">k)</span>
+<span class="s1">{</span>
+    <span class="s1">cout &lt;&lt; </span><span class="s2">&quot;</span><span class="s3">\n\n</span><span class="s2">GAME STARTING...</span><span class="s3">\n\n</span><span class="s2">&quot;</span><span class="s3">;</span>
+    <span class="s1">string players[</span><span class="s5">2</span><span class="s1">] = { </span><span class="s2">&quot;Player1&quot;</span><span class="s3">, </span><span class="s2">&quot;Player2&quot; </span><span class="s1">}</span><span class="s3">;</span>
+    <span class="s3">bool </span><span class="s1">turn = </span><span class="s5">0</span><span class="s3">;</span>
+    <span class="s3">int </span><span class="s1">count_moves = </span><span class="s5">0</span><span class="s3">;</span>
+
+    <span class="s3">while </span><span class="s1">(game_status == IN_PROGRESS)</span>
+    <span class="s1">{</span>
+        <span class="s4">// Печать текущей позиции игры</span>
+        <span class="s1">print_position(n</span><span class="s3">, </span><span class="s1">m)</span><span class="s3">;</span>
+        <span class="s1">count_moves++</span><span class="s3">;</span>
+        <span class="s1">cout &lt;&lt; players[turn] &lt;&lt; </span><span class="s2">&quot; make your move: &quot;</span><span class="s3">;</span>
+        <span class="s3">int </span><span class="s1">x</span><span class="s3">, </span><span class="s1">y</span><span class="s3">;</span>
+        <span class="s1">cin &gt;&gt; x &gt;&gt; y</span><span class="s3">;</span>
+        <span class="s3">while </span><span class="s1">(x &lt; </span><span class="s5">1 </span><span class="s1">|| y &lt; </span><span class="s5">1 </span><span class="s1">|| x &gt; n || y &gt; m)</span>
+        <span class="s1">{</span>
+            <span class="s1">cout &lt;&lt; </span><span class="s2">&quot;Incorrect position...</span><span class="s3">\n</span><span class="s2">Retry...: &quot;</span><span class="s3">;</span>
+            <span class="s1">cin &gt;&gt; x &gt;&gt; y</span><span class="s3">;</span>
+        <span class="s1">}</span>
+
+        <span class="s4">// Проверка, что позиция свободна</span>
+        <span class="s3">while </span><span class="s1">(field[x - </span><span class="s5">1</span><span class="s1">][y - </span><span class="s5">1</span><span class="s1">] != EMPTY)</span>
+        <span class="s1">{</span>
+            <span class="s1">cout &lt;&lt; </span><span class="s2">&quot;This cell is busy already</span><span class="s3">\n</span><span class="s2">Retry...: &quot;</span><span class="s3">;</span>
+            <span class="s1">cin &gt;&gt; x &gt;&gt; y</span><span class="s3">;</span>
+        <span class="s1">}</span>
+
+        <span class="s4">// Сделать ход</span>
+        <span class="s1">field[--x][--y] = (turn ? ZERO : CROSS)</span><span class="s3">;</span>
+
+        <span class="s4">// Проверка статуса игры после последнего хода</span>
+        <span class="s1">checkstatus(n</span><span class="s3">, </span><span class="s1">m</span><span class="s3">, </span><span class="s1">k</span><span class="s3">, </span><span class="s1">x</span><span class="s3">, </span><span class="s1">y</span><span class="s3">, </span><span class="s1">turn</span><span class="s3">, </span><span class="s1">count_moves)</span><span class="s3">;</span>
+
+        <span class="s4">// Изменить ход</span>
+        <span class="s1">turn = (turn == </span><span class="s5">0</span><span class="s1">)</span><span class="s3">;</span>
+    <span class="s1">}</span>
+
+    <span class="s1">print_position(n</span><span class="s3">, </span><span class="s1">m)</span><span class="s3">;</span>
+
+    <span class="s3">if </span><span class="s1">(game_status == DRAW)</span>
+    <span class="s1">{</span>
+        <span class="s3">return </span><span class="s2">&quot;DRAW!&quot;</span><span class="s3">;</span>
+    <span class="s1">}</span>
+    <span class="s3">return </span><span class="s1">(players[game_status - </span><span class="s5">1</span><span class="s1">] + </span><span class="s2">&quot; WON!&quot;</span><span class="s1">)</span><span class="s3">;</span>
+<span class="s1">}</span>
+
+<span class="s4">// Режим игры: Player versus Bot</span>
+<span class="s1">string game_process_player_vs_bot(</span><span class="s3">int </span><span class="s1">n</span><span class="s3">, int </span><span class="s1">m</span><span class="s3">, int </span><span class="s1">k)</span>
+<span class="s1">{</span>
+    <span class="s1">cout &lt;&lt; </span><span class="s2">&quot;</span><span class="s3">\n\n</span><span class="s2">GAME STARTING...</span><span class="s3">\n\n</span><span class="s2">&quot;</span><span class="s3">;</span>
+    <span class="s1">string players[</span><span class="s5">2</span><span class="s1">] = { </span><span class="s2">&quot;Player1&quot;</span><span class="s3">, </span><span class="s2">&quot;Bot&quot; </span><span class="s1">}</span><span class="s3">;</span>
+    <span class="s3">bool </span><span class="s1">turn = </span><span class="s5">0</span><span class="s3">;</span>
+    <span class="s3">int </span><span class="s1">count_moves = </span><span class="s5">0</span><span class="s3">;</span>
+    <span class="s3">while </span><span class="s1">(game_status == IN_PROGRESS)</span>
+    <span class="s1">{</span>
+        <span class="s4">// Печать текущей позиции игры</span>
+        <span class="s1">print_position(n</span><span class="s3">, </span><span class="s1">m)</span><span class="s3">;</span>
+        <span class="s1">count_moves++</span><span class="s3">;</span>
+        <span class="s1">cout &lt;&lt; players[turn] &lt;&lt; </span><span class="s2">&quot; make your move: &quot;</span><span class="s3">;</span>
+        <span class="s3">if </span><span class="s1">(!turn)</span>
+        <span class="s1">{</span>
+            <span class="s4">// Игрок делает ход</span>
+            <span class="s3">int </span><span class="s1">x</span><span class="s3">, </span><span class="s1">y</span><span class="s3">;</span>
+            <span class="s1">cin &gt;&gt; x &gt;&gt; y</span><span class="s3">;</span>
+            <span class="s3">while </span><span class="s1">(x &lt; </span><span class="s5">1 </span><span class="s1">|| y &lt; </span><span class="s5">1 </span><span class="s1">|| x &gt; n || y &gt; m)</span>
+            <span class="s1">{</span>
+                <span class="s1">cout &lt;&lt; </span><span class="s2">&quot;Incorrect position...</span><span class="s3">\n</span><span class="s2">Retry...: &quot;</span><span class="s3">;</span>
+                <span class="s1">cin &gt;&gt; x &gt;&gt; y</span><span class="s3">;</span>
+            <span class="s1">}</span>
+            <span class="s4">// Проверка, что позиция свободна</span>
+            <span class="s3">while </span><span class="s1">(field[x - </span><span class="s5">1</span><span class="s1">][y - </span><span class="s5">1</span><span class="s1">] != EMPTY)</span>
+            <span class="s1">{</span>
+                <span class="s1">cout &lt;&lt; </span><span class="s2">&quot;This cell is busy already</span><span class="s3">\n</span><span class="s2">Retry...: &quot;</span><span class="s3">;</span>
+                <span class="s1">cin &gt;&gt; x &gt;&gt; y</span><span class="s3">;</span>
+            <span class="s1">}</span>
+
+            <span class="s4">// Сделать ход</span>
+            <span class="s1">field[--x][--y] = (turn ? ZERO : CROSS)</span><span class="s3">;</span>
+            <span class="s1">checkstatus(n</span><span class="s3">, </span><span class="s1">m</span><span class="s3">, </span><span class="s1">k</span><span class="s3">, </span><span class="s1">x</span><span class="s3">, </span><span class="s1">y</span><span class="s3">, </span><span class="s1">turn</span><span class="s3">, </span><span class="s1">count_moves)</span><span class="s3">;</span>
+        <span class="s1">}</span>
+        <span class="s3">else</span>
+        <span class="s1">{</span>
+            <span class="s4">// Бот делает ход</span>
+            <span class="s3">int </span><span class="s1">x</span><span class="s3">, </span><span class="s1">y</span><span class="s3">;</span>
+            <span class="s1">random_bot(n</span><span class="s3">, </span><span class="s1">m</span><span class="s3">, </span><span class="s1">turn</span><span class="s3">, </span><span class="s1">&amp;x</span><span class="s3">, </span><span class="s1">&amp;y)</span><span class="s3">;</span>
+            <span class="s1">cout &lt;&lt; x + </span><span class="s5">1 </span><span class="s1">&lt;&lt; </span><span class="s2">' ' </span><span class="s1">&lt;&lt; y + </span><span class="s5">1 </span><span class="s1">&lt;&lt; </span><span class="s2">'</span><span class="s3">\n</span><span class="s2">'</span><span class="s3">;</span>
+            <span class="s1">checkstatus(n</span><span class="s3">, </span><span class="s1">m</span><span class="s3">, </span><span class="s1">k</span><span class="s3">, </span><span class="s1">x</span><span class="s3">, </span><span class="s1">y</span><span class="s3">, </span><span class="s1">turn</span><span class="s3">, </span><span class="s1">count_moves)</span><span class="s3">;</span>
+        <span class="s1">}</span>
+
+        <span class="s1">turn = (turn == </span><span class="s5">0</span><span class="s1">)</span><span class="s3">;</span>
+    <span class="s1">}</span>
+
+    <span class="s1">print_position(n</span><span class="s3">, </span><span class="s1">m)</span><span class="s3">;</span>
+    <span class="s3">if </span><span class="s1">(game_status == DRAW)</span>
+    <span class="s1">{</span>
+        <span class="s3">return </span><span class="s2">&quot;DRAW!&quot;</span><span class="s3">;</span>
+    <span class="s1">}</span>
+    <span class="s3">return </span><span class="s1">(players[game_status - </span><span class="s5">1</span><span class="s1">] + </span><span class="s2">&quot; WON!&quot;</span><span class="s1">)</span><span class="s3">;</span>
+<span class="s1">}</span>
+
+<span class="s4">// Инициализация полей</span>
+<span class="s3">void </span><span class="s1">initialize_nmk()</span>
+<span class="s1">{</span>
+    <span class="s3">for </span><span class="s1">(</span><span class="s3">int </span><span class="s1">i = </span><span class="s5">0</span><span class="s3">; </span><span class="s1">i &lt; MAX_HEIGHT</span><span class="s3">; </span><span class="s1">i++)</span>
+    <span class="s1">{</span>
+        <span class="s1">fill(field[i]</span><span class="s3">, </span><span class="s1">field[i] + MAX_WIDTH</span><span class="s3">, </span><span class="s1">EMPTY)</span><span class="s3">;</span>
+    <span class="s1">}</span>
+<span class="s1">}</span>
+
+<span class="s4">// Печать текущего состояния доски</span>
+<span class="s3">void </span><span class="s1">print_position(</span><span class="s3">int </span><span class="s1">n</span><span class="s3">, int </span><span class="s1">m)</span>
+<span class="s1">{</span>
+    <span class="s3">for </span><span class="s1">(</span><span class="s3">int </span><span class="s1">i = -</span><span class="s5">1</span><span class="s3">; </span><span class="s1">i &lt; n</span><span class="s3">; </span><span class="s1">i++)</span>
+    <span class="s1">{</span>
+        <span class="s3">for </span><span class="s1">(</span><span class="s3">int </span><span class="s1">j = -</span><span class="s5">1</span><span class="s3">; </span><span class="s1">j &lt; m</span><span class="s3">; </span><span class="s1">j++)</span>
+        <span class="s1">{</span>
+            <span class="s3">if </span><span class="s1">(i == -</span><span class="s5">1 </span><span class="s1">&amp;&amp; j &gt;= </span><span class="s5">0</span><span class="s1">)</span>
+            <span class="s1">{</span>
+                <span class="s1">cout &lt;&lt; </span><span class="s2">&quot;</span><span class="s3">\t</span><span class="s2">&quot; </span><span class="s1">&lt;&lt; j + </span><span class="s5">1</span><span class="s3">;</span>
+            <span class="s1">}</span>
+            <span class="s3">else if </span><span class="s1">(i &gt;= </span><span class="s5">0 </span><span class="s1">&amp;&amp; j == -</span><span class="s5">1</span><span class="s1">)</span>
+            <span class="s1">{</span>
+                <span class="s1">cout &lt;&lt; i + </span><span class="s5">1 </span><span class="s1">&lt;&lt; </span><span class="s2">&quot;</span><span class="s3">\t</span><span class="s2">&quot;</span><span class="s3">;</span>
+            <span class="s1">}</span>
+
+            <span class="s3">if </span><span class="s1">(i &gt;= </span><span class="s5">0 </span><span class="s1">&amp;&amp; i &lt; n &amp;&amp; j &gt;= </span><span class="s5">0 </span><span class="s1">&amp;&amp; j &lt; m)</span>
+            <span class="s1">{</span>
+                <span class="s1">cout &lt;&lt; field[i][j] &lt;&lt; </span><span class="s2">&quot;</span><span class="s3">\t</span><span class="s2">&quot;</span><span class="s3">;</span>
+            <span class="s1">}</span>
+
+            <span class="s3">if </span><span class="s1">(j == m - </span><span class="s5">1</span><span class="s1">)</span>
+            <span class="s1">{</span>
+                <span class="s1">cout &lt;&lt; </span><span class="s2">'</span><span class="s3">\n</span><span class="s2">'</span><span class="s3">;</span>
+            <span class="s1">}</span>
+        <span class="s1">}</span>
+    <span class="s1">}</span>
+<span class="s1">}</span>
+
+<span class="s4">// Проверка текущего статуса игры</span>
+<span class="s3">void </span><span class="s1">checkstatus(</span><span class="s3">int </span><span class="s1">n</span><span class="s3">, int </span><span class="s1">m</span><span class="s3">, int </span><span class="s1">k</span><span class="s3">, int </span><span class="s1">x</span><span class="s3">, int </span><span class="s1">y</span><span class="s3">, bool </span><span class="s1">turn</span><span class="s3">, int </span><span class="s1">count_moves)</span>
+<span class="s1">{</span>
+    <span class="s4">// Проверка вертикали</span>
+    <span class="s3">int </span><span class="s1">cnt = </span><span class="s5">0</span><span class="s3">;</span>
+    <span class="s3">for </span><span class="s1">(</span><span class="s3">int </span><span class="s1">i = </span><span class="s5">0</span><span class="s3">; </span><span class="s1">i &lt; n</span><span class="s3">; </span><span class="s1">i++)</span>
+    <span class="s1">{</span>
+        <span class="s3">if </span><span class="s1">(field[i][y] == (turn ? ZERO : CROSS))</span>
+            <span class="s1">cnt++</span><span class="s3">;</span>
+        <span class="s3">else</span>
+            <span class="s1">cnt = </span><span class="s5">0</span><span class="s3">;</span>
+        <span class="s3">if </span><span class="s1">(cnt == k)</span>
+        <span class="s1">{</span>
+            <span class="s1">game_status = (turn ? SECOND_PLAYER_WON : FIRST_PLAYER_WON)</span><span class="s3">;</span>
+            <span class="s3">break;</span>
+        <span class="s1">}</span>
+    <span class="s1">}</span>
+
+    <span class="s4">// Проверка горизонтали</span>
+    <span class="s3">for </span><span class="s1">(</span><span class="s3">int </span><span class="s1">i = </span><span class="s5">0</span><span class="s3">; </span><span class="s1">i &lt; m</span><span class="s3">; </span><span class="s1">i++)</span>
+    <span class="s1">{</span>
+        <span class="s3">if </span><span class="s1">(field[x][i] == (turn ? ZERO : CROSS))</span>
+            <span class="s1">cnt++</span><span class="s3">;</span>
+        <span class="s3">else</span>
+            <span class="s1">cnt = </span><span class="s5">0</span><span class="s3">;</span>
+        <span class="s3">if </span><span class="s1">(cnt == k)</span>
+        <span class="s1">{</span>
+            <span class="s1">game_status = (turn ? SECOND_PLAYER_WON : FIRST_PLAYER_WON)</span><span class="s3">;</span>
+            <span class="s3">break;</span>
+        <span class="s1">}</span>
+    <span class="s1">}</span>
+
+    <span class="s1">cnt = </span><span class="s5">0</span><span class="s3">;</span>
+    <span class="s4">// Проверка первичной диагонали</span>
+    <span class="s3">for </span><span class="s1">(</span><span class="s3">int </span><span class="s1">i = x</span><span class="s3">, </span><span class="s1">j = y</span><span class="s3">; </span><span class="s1">i &gt;= </span><span class="s5">0 </span><span class="s1">&amp;&amp; j &gt;= </span><span class="s5">0 </span><span class="s1">&amp;&amp; i &lt; n &amp;&amp; j &lt; m</span><span class="s3">; </span><span class="s1">i++</span><span class="s3">, </span><span class="s1">j++)</span>
+    <span class="s1">{</span>
+        <span class="s3">if </span><span class="s1">(field[i][j] != (turn ? ZERO : CROSS))</span>
+            <span class="s3">break;</span>
+
+        <span class="s3">if </span><span class="s1">(field[i][j] == (turn ? ZERO : CROSS))</span>
+            <span class="s1">cnt++</span><span class="s3">;</span>
+    <span class="s1">}</span>
+
+    <span class="s3">for </span><span class="s1">(</span><span class="s3">int </span><span class="s1">i = x - </span><span class="s5">1</span><span class="s3">, </span><span class="s1">j = y - </span><span class="s5">1</span><span class="s3">; </span><span class="s1">i &gt;= </span><span class="s5">0 </span><span class="s1">&amp;&amp; j &gt;= </span><span class="s5">0 </span><span class="s1">&amp;&amp; i &lt; n &amp;&amp; j &lt; m</span><span class="s3">; </span><span class="s1">i--</span><span class="s3">, </span><span class="s1">j--)</span>
+    <span class="s1">{</span>
+        <span class="s3">if </span><span class="s1">(field[i][j] != (turn ? ZERO : CROSS))</span>
+            <span class="s3">break;</span>
+
+        <span class="s3">if </span><span class="s1">(field[i][j] == (turn ? ZERO : CROSS))</span>
+            <span class="s1">cnt++</span><span class="s3">;</span>
+    <span class="s1">}</span>
+
+    <span class="s3">if </span><span class="s1">(cnt &gt;= k)</span>
+    <span class="s1">{</span>
+        <span class="s1">game_status = (turn ? SECOND_PLAYER_WON : FIRST_PLAYER_WON)</span><span class="s3">;</span>
+    <span class="s1">}</span>
+
+    <span class="s1">cnt = </span><span class="s5">0</span><span class="s3">;</span>
+
+    <span class="s4">// Проверка вторичной диагонали</span>
+    <span class="s3">for </span><span class="s1">(</span><span class="s3">int </span><span class="s1">i = x</span><span class="s3">, </span><span class="s1">j = y</span><span class="s3">; </span><span class="s1">i &gt;= </span><span class="s5">0 </span><span class="s1">&amp;&amp; j &gt;= </span><span class="s5">0 </span><span class="s1">&amp;&amp; i &lt; n &amp;&amp; j &lt; m</span><span class="s3">; </span><span class="s1">i--</span><span class="s3">, </span><span class="s1">j++)</span>
+    <span class="s1">{</span>
+        <span class="s3">if </span><span class="s1">(field[i][j] != (turn ? ZERO : CROSS))</span>
+            <span class="s3">break;</span>
+
+        <span class="s3">if </span><span class="s1">(field[i][j] == (turn ? ZERO : CROSS))</span>
+            <span class="s1">cnt++</span><span class="s3">;</span>
+    <span class="s1">}</span>
+
+    <span class="s3">for </span><span class="s1">(</span><span class="s3">int </span><span class="s1">i = x + </span><span class="s5">1</span><span class="s3">, </span><span class="s1">j = y - </span><span class="s5">1</span><span class="s3">; </span><span class="s1">i &gt;= </span><span class="s5">0 </span><span class="s1">&amp;&amp; j &gt;= </span><span class="s5">0 </span><span class="s1">&amp;&amp; i &lt; n &amp;&amp; j &lt; m</span><span class="s3">; </span><span class="s1">i++</span><span class="s3">, </span><span class="s1">j--)</span>
+    <span class="s1">{</span>
+        <span class="s3">if </span><span class="s1">(field[i][j] != (turn ? ZERO : CROSS))</span>
+            <span class="s3">break;</span>
+
+        <span class="s3">if </span><span class="s1">(field[i][j] == (turn ? ZERO : CROSS))</span>
+            <span class="s1">cnt++</span><span class="s3">;</span>
+    <span class="s1">}</span>
+
+    <span class="s3">if </span><span class="s1">(cnt &gt;= k)</span>
+    <span class="s1">{</span>
+        <span class="s1">game_status = (turn ? SECOND_PLAYER_WON : FIRST_PLAYER_WON)</span><span class="s3">;</span>
+    <span class="s1">}</span>
+
+    <span class="s4">// Проверка игры</span>
+    <span class="s3">if </span><span class="s1">(count_moves == n * m &amp;&amp; game_status == IN_PROGRESS)</span>
+    <span class="s1">{</span>
+        <span class="s1">game_status = DRAW</span><span class="s3">;</span>
+    <span class="s1">}</span>
+<span class="s1">}</span>
+
+<span class="s4">// Бот движущийся рандомно</span>
+<span class="s3">void </span><span class="s1">random_bot(</span><span class="s3">int </span><span class="s1">n</span><span class="s3">, int </span><span class="s1">m</span><span class="s3">, bool </span><span class="s1">turn</span><span class="s3">, int </span><span class="s1">*x</span><span class="s3">, int </span><span class="s1">*y)</span>
+<span class="s1">{</span>
+    <span class="s1">srand(time(NULL))</span><span class="s3">;</span>
+    <span class="s1">*x = rand() % n</span><span class="s3">;</span>
+    <span class="s1">*y = rand() % m</span><span class="s3">;</span>
+    <span class="s3">while </span><span class="s1">(field[*x][*y] != EMPTY)</span>
+    <span class="s1">{</span>
+        <span class="s1">*x = rand() % n</span><span class="s3">;</span>
+        <span class="s1">*y = rand() % m</span><span class="s3">;</span>
+    <span class="s1">}</span>
+    <span class="s1">field[*x][*y] = turn ? ZERO : CROSS</span><span class="s3">;</span>
+<span class="s1">}</span>
+
+<span class="s3">int </span><span class="s1">main(</span><span class="s3">int </span><span class="s1">argc</span><span class="s3">, const char </span><span class="s1">*argv[])</span>
+<span class="s1">{</span>
+    <span class="s4">// Игра начинается</span>
+    <span class="s1">initialize_nmk()</span><span class="s3">;</span>
+    <span class="s3">int </span><span class="s1">n</span><span class="s3">, </span><span class="s1">m</span><span class="s3">, </span><span class="s1">k</span><span class="s3">;</span>
+    <span class="s1">cout &lt;&lt; </span><span class="s2">&quot;Print n, m and k: &quot;</span><span class="s3">;</span>
+    <span class="s1">cin &gt;&gt; n &gt;&gt; m &gt;&gt; k</span><span class="s3">;</span>
+    <span class="s3">if </span><span class="s1">(n &lt;= </span><span class="s5">2 </span><span class="s1">|| m &lt;= </span><span class="s5">2 </span><span class="s1">|| n &gt; MAX_HEIGHT || m &gt; MAX_WIDTH || (k &gt; n &amp;&amp; k &gt; m))</span>
+    <span class="s1">{</span>
+        <span class="s1">cerr &lt;&lt; </span><span class="s2">&quot;Incorrect input...&quot;</span><span class="s3">;</span>
+        <span class="s3">return </span><span class="s5">1</span><span class="s3">;</span>
+    <span class="s1">}</span>
+    <span class="s1">cout &lt;&lt; </span><span class="s2">&quot;Choose opponent:</span><span class="s3">\n</span><span class="s6">\</span>
+    <span class="s2">1)Player\n\ 
+    2)Random Bot\n&quot;</span><span class="s3">;</span>
+    <span class="s3">int </span><span class="s1">opponent = </span><span class="s5">0</span><span class="s3">;</span>
+    <span class="s1">cin &gt;&gt; opponent</span><span class="s3">;</span>
+    <span class="s3">switch </span><span class="s1">(opponent)</span>
+    <span class="s1">{</span>
+        <span class="s3">case </span><span class="s5">1</span><span class="s1">:</span>
+            <span class="s1">cout &lt;&lt; game_process_player_vs_player(n</span><span class="s3">, </span><span class="s1">m</span><span class="s3">, </span><span class="s1">k) &lt;&lt; </span><span class="s2">'</span><span class="s3">\n</span><span class="s2">'</span><span class="s3">;</span>
+            <span class="s3">break;</span>
+
+        <span class="s3">case </span><span class="s5">2</span><span class="s1">:</span>
+            <span class="s1">cout &lt;&lt; game_process_player_vs_bot(n</span><span class="s3">, </span><span class="s1">m</span><span class="s3">, </span><span class="s1">k) &lt;&lt; </span><span class="s2">'</span><span class="s3">\n</span><span class="s2">'</span><span class="s3">;</span>
+            <span class="s3">break;</span>
+        <span class="s3">default</span><span class="s1">:</span>
+            <span class="s1">cerr &lt;&lt; </span><span class="s2">&quot;Undefined opponent type</span><span class="s3">\n</span><span class="s2">&quot;</span><span class="s3">;</span>
+            <span class="s3">return </span><span class="s5">1</span><span class="s3">;</span>
+    <span class="s1">}</span>
+
+    <span class="s4">// Игра заканчивается</span>
+    <span class="s3">return </span><span class="s5">0</span><span class="s3">;</span>
+<span class="s1">}</span>
+
+</pre>
+</body>
+</html>
